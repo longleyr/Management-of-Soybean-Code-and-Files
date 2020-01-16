@@ -1,4 +1,4 @@
-#SampleID	BarcodeSequence	LinkerPrimerSequence	Reverse_Primer	barcodenumb	origin	Dataset	Run	experiment	Growth Stage	date	Management	Management_Indicator	plot	sample_replicate	application	Sample_or_Control	Label	bar_label	Indicator_label	Description
+#SampleID	BarcodeSequence	LinkerPrimerSequence	Reverse_Primer	barcodenumb	origin	Dataset	Run	experiment	Growth_Stage	date	Management	Management_Indicator	plot	sample_replicate	application	Sample_or_Control	Label	bar_label	Indicator_label	Description
 T1R1AV2S	GACGCACTAA	CTTGGTCATTTAGAGGAAGTAA	AGARCCAAGAGATCCRTT	bc385	soil	Fungi	1	obj_1	V2	6_25_18	Conventional	Conventional	T1R1	A	NA	True Sample	P1 Conventional V2	Conventional V2	soil Conventional V2	11A
 T2R1BV2S	TCTCCGTTCC	CTTGGTCATTTAGAGGAAGTAA	AGARCCAAGAGATCCRTT	bc386	soil	Fungi	1	obj_1	V2	6_25_18	No-Till	No_Till	T2R1	B	NA	True Sample	P1 No-Till V2	No-Till V2	soil No-Till V2	11B
 T1R1CV2S	CTGATTACGA	CTTGGTCATTTAGAGGAAGTAA	AGARCCAAGAGATCCRTT	bc387	soil	Fungi	1	obj_1	V2	6_25_18	Conventional	Conventional	T1R1	C	NA	True Sample	P1 Conventional V2	Conventional V2	soil Conventional V2	11C
