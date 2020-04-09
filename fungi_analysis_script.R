@@ -1830,7 +1830,208 @@ head(ps.noncontam_below_obj1_norm )
 #create physeq object with normalized otu table
 otu_table(ps.noncontam_below_obj1) <- otu_table(ps.noncontam_below_obj1_norm, taxa_are_rows = TRUE)
 
+#>>> RANDOM FOREST ------------------------------------------------------------
+# This is an example of belowground Fungi, but all other communities were assessed in the same way
+library("randomForest")
+library("plyr") # for the "arrange" function
+install.packages("rfUtilities")
+library("rfUtilities") # to test model significance
+library("caret") # to get leave-one-out cross-validation and also contains the nearZeroVar function
 
+otu_table(ps.noncontam_below_obj1)
+otu_fungi_below <- as.data.frame(otu_table(ps.noncontam_below_obj1))
+metadata_fungi_below <- as.data.frame(as.matrix(sample_data(ps.noncontam_below_obj1)))
+taxa_fungi_below <- as.data.frame(as.matrix(tax_table(ps.noncontam_below_obj1)))
+
+
+# PREPARE TABLES FOR CLASSIFICATION ---------------------------------------
+
+identical(colnames(otu_fungi_below), rownames(metadata_fungi_below))
+
+# >>> TESTING FOR CROP PREDICTION PREDICTION ------------------------------
+
+# adding the classification variable and sample names ---------------------
+otus_fungi_below_clr_management <- data.frame(t(otu_fungi_below))
+otus_fungi_below_clr_management
+otus_fungi_below_clr_management$Sample <- rownames(otus_fungi_below_clr_management)
+otus_fungi_below_clr_management$Management <- metadata_fungi_below[rownames(otus_fungi_below_clr_management), "Management"]
+head(otus_fungi_root_clr_management)
+metadata_fungi_below
+# RUNNING THE MODEL -------------------------------------------------------
+
+
+set.seed(231)
+RF_fungi_below_manag_3001 <- randomForest(x=otus_fungi_below_clr_management[,1:(ncol(otus_fungi_below_clr_management)-2)],
+                                        y=otus_fungi_below_clr_management$Management,
+                                        ntree=3001,
+                                        #mtry = 20,
+                                        importance=TRUE,
+                                        proximity=TRUE)
+
+RF_fungi_below_manag_3001
+str(RF_fungi_below_manag_3001)
+
+# check for optimal mtry value using a loop ----------------------------------
+# this identifies the mtry value that gives the lowest out of bag error rate
+https://www.analyticsvidhya.com/blog/2016/05/h2o-data-table-build-models-large-data-sets/
+  ps.noncontam_below_obj1
+otu_table(ps.noncontam_below_obj1)
+#oob_values <- vector(length=100)
+oob_values <- seq(from = 25, to = 55, by = 1)
+str(oob_values)
+
+for(i in 1:31) {
+  temp.model <- randomForest(x=otus_fungi_below_clr_management[,1:(ncol(otus_fungi_below_clr_management)-2)],
+                             y=as.factor(otus_fungi_below_clr_management$Management),
+                             mtry=i, ntree=3001)
+  oob_values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]
+}
+
+
+match(min(oob_values),oob_values)
+
+
+# removing unim-ortant variables using MeanDecreaseGini ------------------
+importance(RF_fungi_below_manag_3001)
+
+##Plot  Mean Decrease Gini and Mean Decrease Accuracy
+https://community.alteryx.com/t5/Alteryx-Designer-Discussions/Help-Mean-Decrease-in-Gini-for-dummies/td-p/197223
+https://community.alteryx.com/t5/Alteryx-Designer-Knowledge-Base/Seeing-the-Forest-for-the-Trees-An-Introduction-to-Random-Forest/ta-p/158062
+
+varImpPlot(RF_fungi_below_manag_3001)
+RF_fungi_below_manag_3001
+#> ASSESSING MODEL FIT ---------------------------------------------------
+# Now check to see if the random forest is actually big enough... Up to a point, the more
+# trees in the forest, the better. You can tell when you've made enough when the OOB
+# no longer improves.
+RF_fungi_below_manag_3001
+ooberror_fungi_below_manag <- data.frame(
+  Trees=rep(1:nrow(RF_fungi_below_manag_3001$err.rate), times=4),
+  Type=rep(c("OOB","Conventional","No-Till","Organic"), each=nrow(RF_fungi_below_manag_3001$err.rate)),
+  Error=c(RF_fungi_below_manag_3001$err.rate[,"OOB"],
+          RF_fungi_below_manag_3001$err.rate[,"Conventional"],
+          RF_fungi_below_manag_3001$err.rate[,"No-Till"],
+          RF_fungi_below_manag_3001$err.rate[,"Organic"]))
+ooberror_fungi_below_manag
+
+ooberror_fungi_below_manag = ggplot(data=ooberror_fungi_below_manag, aes(x=Trees, y=Error)) +
+  ggtitle("Model Errors") +
+  theme_bw() +
+  annotate("text", x=300, y=0.6, label="OOB estimate: 7.69%", size=3) +
+  geom_line(aes(color=Type)) +
+  expand_limits(y = 0) +
+  theme(legend.key.height = unit(0.2, "cm"), legend.key.width = unit(0.3, "cm")) +
+  theme(legend.title = element_text(size = 9, face = "bold"), legend.text = element_text(size = 7)) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, size = 7,hjust = 0.5, vjust = 0.5)) +
+  theme(axis.text.y = element_text(angle = 0, size = 8, hjust = 0.5, vjust = 0.5)) +
+  theme(axis.title = element_text(angle = 0, size = 8, face = "bold")) +
+  #guides(color=guide_legend(ncol=1)) +
+  theme(legend.position="bottom")
+
+ooberror_fungi_below_manag
+
+
+
+# PLOTTING THE RESULTS ------------------------------------------------
+# Now let's create an MDS-plot to show how the samples are related to each
+# other. Start by converting the proximity matrix into a distance matrix.
+dist_fungi_below_manag <- as.dist(1-RF_fungi_below_manag_3001$proximity)
+mds_fungi_below_manag <- cmdscale(dist_fungi_below_manag, eig=TRUE, x.ret=TRUE)
+
+## calculate the percentage of variation that each MDS axis accounts for...
+mds_fungi_below_var_manag  <- round(mds_fungi_below_manag$eig/sum(mds_fungi_below_manag $eig)*100, 1)
+
+## now make a fancy looking plot that shows the MDS axes and the variation:
+mds_values_fungi_below_manag <- mds_fungi_below_manag$points
+mds_data_fungi_below_manag <- data.frame(Sample=rownames(mds_values_fungi_below_manag),
+                                       X=mds_values_fungi_below_manag[,1],
+                                       Y=mds_values_fungi_below_manag[,2],
+                                       Management=otus_fungi_below_clr_management$Management)
+
+mds_data_fungi_below_manag$Management <- factor(mds_data_fungi_below_manag$Management, levels = c("Conventional","No-Till","Organic"))
+mds_data_fungi_below_manag
+plot_mds_data_fungi_below_manag = ggplot(mds_data_fungi_below_manag, aes(x=X, y=Y, label=Sample, color=Management)) +
+  geom_point() +
+  #geom_text(aes(color=Status)) +
+  theme_bw() +
+  xlab("MDS1")+
+  ylab("MDS2")+
+  #xlab(paste("MDS1 - ", mds_values_fungi_below_manag[,1]], "%", sep="")) +
+  #ylab(paste("MDS2 - ", mds_values_fungi_below_manag[,2], "%", sep="")) +
+  ggtitle(" Random Forest Proximities") +
+  theme_bw() +
+  scale_colour_manual("Management",breaks = c("Conventional","No-Till","Organic"),
+                      values = c("Conventional"="orange", "No-Till"="blue", "Organic" = "red"))  +
+  theme(legend.key.height = unit(0.2, "cm"), legend.key.width = unit(0.3, "cm")) +
+  theme(legend.title = element_text(size = 9, face = "bold"), legend.text = element_text(size = 7)) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, size = 8,hjust = 0.5, vjust = 0.5)) +
+  theme(axis.text.y = element_text(angle = 0, size = 8, hjust = 0.5, vjust = 0.5)) +
+  theme(axis.title = element_text(angle = 0, size = 8, face = "bold")) +
+  guides(color=guide_legend(nrow=2)) +
+  theme(legend.position="bottom")
+
+plot_mds_data_fungi_below_manag 
+
+# ASSESS MODEL PERFORMANCE WITH PERMUTATIONS -----------------------------
+# This takes a lot to run!!
+# performs RF models 99 times, tests for significance of actual model
+RF_fungi_below_manag_3001_sig <- rf.significance(x=RF_fungi_below_manag_3001, xdata=otus_fungi_below_clr_management[,1:(ncol(otus_fungi_below_clr_management)-2)],
+                                          nperm=99,
+                                          ntree=3001)  
+RF_fungi_below_manag_3001_sig
+
+# Identifying Important Features ---------------------------------------------------------------------
+RF_below_imp_manag <- as.data.frame(RF_fungi_below_manag_3001$importance)
+RF_below_imp_manag$features <- rownames(RF_below_imp_manag)
+RF_below_imp_manag <- arrange(RF_below_imp_manag, desc(MeanDecreaseAccuracy))
+RF_below_imp_manag
+rownames(RF_below_imp_manag) <- RF_below_imp_manag$features
+
+taxa_fungi_below[rownames(taxa_fungi_below)%in%rownames(RF_below_imp_manag), ] -> taxa_fungi_below_manag
+head(taxa_fungi_below_manag)
+
+identical(rownames(taxa_fungi_below_manag), rownames(taxa_fungi_below_manag))
+order_fungi_below_manag <- match(rownames(taxa_fungi_below_manag), rownames(RF_below_imp_manag))
+RF_fungi_below_imp_manag <- RF_below_imp_manag[order_fungi_below_manag,]
+
+
+
+RF_fungi_below_imp_manag$Genus <- taxa_fungi_below$Genus
+RF_fungi_below_imp_manag$label <- paste(RF_fungi_below_imp_manag$Genus, "-", RF_fungi_below_imp_manag$features)
+RF_fungi_root_imp_Crop$Species <- taxa_fungi_root_Crop$Species
+RF_fungi_root_imp_Crop$Taxonomy <- paste(RF_fungi_root_imp_Crop$features, RF_fungi_root_imp_Crop$Species, sep = " ")
+RF_fungi_below_imp_manag <- RF_fungi_below_imp_manag[order(RF_fungi_below_imp_manag$MeanDecreaseAccuracy, decreasing = TRUE),]
+RF_fungi_below_imp_manag
+bar_fungi_below_manag = ggplot(data=RF_fungi_below_imp_manag[1:30,]) +
+  geom_bar(aes(x= reorder(label, -MeanDecreaseAccuracy),
+               y= MeanDecreaseAccuracy), stat="identity") +
+  labs(title = "Most important OTUs\nfor Classification", x= "OTU", y= "Mean Decrease in Accuracy") +
+  theme_classic() +
+  coord_flip() +
+  #scale_y_reverse() +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 0, size = 7, hjust = 0.5, vjust = 0.5)) +
+  theme(axis.text.y = element_text(angle = 0, size = 8, hjust = 1, vjust = 0.5)) +
+  theme(axis.title = element_text(angle = 0, size = 8, face = "bold")) +
+  theme(legend.position="bottom")
+
+bar_fungi_below_manag
+
+
+
+# *** FIGURE SF 4A Model belowground FUNGI ---------------------------------------
+library("ggpubr")
+fig_RF_fungi_below_manag = ggarrange(ooberror_fungi_below_manag,
+                                   plot_mds_data_fungi_below_manag,
+                                   bar_fungi_below_manag,
+                                   labels = c("A", "B", "C"),
+                                   widths = c(1,1,1.5),
+                                   align = "none", ncol = 3, nrow = 1,
+                                   common.legend = FALSE,
+                                   legend = "bottom")
+fig_RF_fungi_below_manag
 
 
 
