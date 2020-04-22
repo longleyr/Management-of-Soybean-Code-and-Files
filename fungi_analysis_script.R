@@ -1978,7 +1978,7 @@ plot_mds_data_fungi_below_manag
 # This takes a lot to run!!
 # performs RF models 99 times, tests for significance of actual model
 RF_fungi_below_manag_3001_sig <- rf.significance(x=RF_fungi_below_manag_3001, xdata=otus_fungi_below_clr_management[,1:(ncol(otus_fungi_below_clr_management)-2)],
-                                          nperm=99,
+                                          nperm=999,
                                           ntree=3001)  
 RF_fungi_below_manag_3001_sig
 
