@@ -621,12 +621,31 @@ spiec_funpro_conventional_below
 
 
 # Compare produced network to random network with same number of nodes
-g_con_below <- sample_pa(n = 139,start.graph =con_below_igraph)
-x <- degree_distribution(g_con_below)
-g <- plot.igraph(g_con_below)
-y <- degree_distribution(plot_spiec_funpro_conventional_below)
+g_con_below <- sample_pa(n = 139,start.graph =con_below_igraph) # this makes the random graph (start graph is an igraph object with your actual graph)
+ x <- degree_distribution(g_con_below) # this gets the degree distribution of the random graph 
+g <- plot.igraph(g_con_below) #to see random plor 
+y <- degree_distribution(plot_spiec_funpro_conventional_below) # get degree distribution of actual network
+ks.test(x,y) # test for statistical differences between random and real network
+x2 <- ks.test(x,y)
+degamat_con_below <- NULL
+n <- 100
+for(i in 1:n){
+  newmatrix <- sample_pa(n =139, start.graph =con_below_igraph)
+  degmat_con_below <- degree_distribution(newmatrix)
+  degamat_con_below<-rbind(degamat_con_below,degmat_con_below)
+}
 
-ks.test(x,y) # test for significance
+degamat_con_below
+
+# test against 100 random networks
+ks.test_con_below <- NULL
+for (i in 1:nrow(degamat_con_below)){
+  ks.test_new <- ks.test(degamat_con_below[i,],y)
+  ks.test_con_below$D[i]       <- ks.test_new$statistic
+  ks.test_con_below$p[i]       <- ks.test_new$p.value
+}
+ks.test_con_below
+write.csv(ks.test_con_below, file ="conventional_below_p.csv")
 
 
 # making graph
