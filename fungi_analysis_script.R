@@ -423,6 +423,212 @@ rarecurve(t(otu_rare_leaves), col = metadata_leaves_rare$Management, label = FAL
           main="Fungi_leaves", ylab = "Number of OTUs", xlab = "Number of DNA reads") -> rare_leaves_fungi
 legend("bottomright", legend=c("No-Till", "organic", "traditional"),
        col=c("black", "green", "red"), lty=1, cex=0.8, box.lty=1) 
+                                        
+ # alpha diversity graph as suggested by reviewer
+label_names <- c(Observed="Richness", Shannon="Shannon")
+label_names
+
+
+ps.noncontam_alpha_soil <- ps.noncontam_soil_obj1
+sample_data(ps.noncontam_alpha_soil)$alpha_label <- factor(sample_data(ps.noncontam_alpha_soil)$alpha_label,
+                                                           level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+alpha_soil <- estimate_richness(ps.noncontam_alpha_soil, split = TRUE, measures = NULL)
+
+
+alpha_soil_fungi = plot_richness(ps.noncontam_alpha_soil, x= "alpha_label", 
+                                color="Growth_Stage", measures = c( "Observed")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,900)+
+  theme(legend.title=element_blank())
+plot(alpha_soil_fungi)
+
+alpha_soil_fungi_shan = plot_richness(ps.noncontam_alpha_soil, x= "alpha_label", 
+                                 color="Growth_Stage", measures = c( "Shannon")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  ylim(0,6)+
+  theme(legend.position="none") 
+plot(alpha_soil_fungi_shan)
+
+# roots
+ps.noncontam_alpha_roots <- ps.noncontam_roots_obj1
+sample_data(ps.noncontam_alpha_roots)$alpha_label <- factor(sample_data(ps.noncontam_alpha_roots)$alpha_label,
+                                                            level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_roots, split = TRUE, measures = NULL)
+alpha_roots_fungi = plot_richness(ps.noncontam_alpha_roots, x= "alpha_label", 
+                                 color="Growth_Stage", measures = c( "Obse")) +
+  
+
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,900)+
+  theme(legend.title=element_blank())
+plot(alpha_roots_fungi)
+
+alpha_roots_fungi_shan = plot_richness(ps.noncontam_alpha_roots, x= "alpha_label", 
+                                  color="Growth_Stage", measures = c( "Shannon")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,6)+
+  theme(legend.title=element_blank())
+plot(alpha_roots_fungi_shan)
+
+#stems
+ps.noncontam_alpha_stems <- ps.noncontam_stems_obj1
+sample_data(ps.noncontam_alpha_stems)$alpha_label <- factor(sample_data(ps.noncontam_alpha_stems)$alpha_label,
+                                                            level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_stems, split = TRUE, measures = NULL)
+alpha_stems_fungi = plot_richness(ps.noncontam_alpha_stems, x= "alpha_label", 
+                                 color="Growth_Stage", measures = c( "Observed")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,500)+
+  theme(legend.title=element_blank())
+plot(alpha_stems_fungi)
+
+
+alpha_stems_fungi_shan = plot_richness(ps.noncontam_alpha_stems, x= "alpha_label", 
+                                  color="Growth_Stage", measures = c( "Shannon")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,4)+
+  theme(legend.title=element_blank())
+plot(alpha_stems_fungi_shan)
+# leaves
+ps.noncontam_alpha_leaves <- ps.noncontam_leaves_obj1
+sample_data(ps.noncontam_alpha_leaves)$alpha_label <- factor(sample_data(ps.noncontam_alpha_leaves)$alpha_label,
+                                                             level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_leaves, split = TRUE, measures = NULL)
+alpha_leaves_fungi = plot_richness(ps.noncontam_alpha_leaves, x= "alpha_label", 
+                                  color="Growth_Stage", measures = c("Observed")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,500)+
+  theme(legend.title=element_blank())
+plot(alpha_leaves_fungi)
+
+alpha_leaves_fungi_shan = plot_richness(ps.noncontam_alpha_leaves, x= "alpha_label", 
+                                   color="Growth_Stage", measures = c("Shannon")) +
+  
+  
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  ylim(0,4)+
+  theme(legend.title=element_blank())
+plot(alpha_leaves_fungi_shan)
+library(ggpubr)
+ggarrange(alpha_soil_fungi,alpha_soil_fungi_shan,alpha_roots_fungi,alpha_roots_fungi_shan,alpha_stems_fungi,alpha_stems_fungi_shan,alpha_leaves_fungi,alpha_leaves_fungi_shan,
+          #labels = c("A", "B", "C", "D" ),
+          widths = c(2.0, 2.0, 2.0, 2.0,2.0,2.0,2.0,2.0),
+          align = "h", ncol = 4, nrow = 2)
 
 ###alpha diversity-----------------------------------
 # used the non normalized data as reccomended by phyloseq 
