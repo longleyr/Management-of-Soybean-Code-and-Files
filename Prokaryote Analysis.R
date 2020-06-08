@@ -350,7 +350,294 @@ ggplot(sums_leaves_obj1, aes(x=Sample_totalSeqs_leaves)) +
   geom_histogram(binwidth=500, colour="black", fill="white") +
   geom_vline(aes(xintercept=mean(Sample_totalSeqs_leaves, na.rm=T)),   # Ignore NA values for mean
              color="red", linetype="dashed", size=1)
+# alpha diversity plots
+### alpha diversity
+# making graph following reviewers reccomendations
+library("gridExtra")
+library("grid")
+library("cowplot")
 
+alpha_supp <- ps.noncontam_soil_obj1
+otu_prok <- as.data.frame(otu_table(alpha_supp ))
+
+otu_prok
+meta_prok <- as.data.frame(sample_data(alpha_supp ))
+alpha_prok <- meta_prok
+alpha_prok
+alpha_prok$readNO <- sample_sums(alpha_supp)
+alpha_prok$Observed <- specnumber(otu_prok, MARGIN = 2)
+alpha_prok$Shannon <- diversity(otu_prok, index="shannon", MARGIN = 2)
+jevenness_prok <- diversityresult(t(otu_prok), method = "each site", index = "Jevenness")
+alpha_prok$Jevenness <- jevenness_prok$Jevenness
+#alpha_prok <- alpha_prok[order(alpha_prok$ReadNO), ]
+alpha_prok
+
+
+
+alpha_prok  
+alpha_prok$alpha_label <- factor(alpha_prok$alpha_label,
+                                  level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+p <- ggplot(alpha_prok, aes(x=alpha_label, y=readNO,color=Growth_Stage)) + 
+  theme_classic()+
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  geom_point(size = 2, shape = 16) +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold"))+
+  geom_boxplot()
+p
+
+
+label_names <- c(Observed="Richness", Shannon="Shannon")
+label_names
+
+
+ps.noncontam_alpha_soil <- ps.noncontam_soil_obj1
+sample_data(ps.noncontam_alpha_soil)$alpha_label <- factor(sample_data(ps.noncontam_alpha_soil)$alpha_label,
+                      level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_soil, split = TRUE, measures = NULL)
+alpha_soil_prok = plot_richness(ps.noncontam_alpha_soil, x= "alpha_label", 
+                                color="Growth_Stage", measures = c( "Observed")) +
+  
+  ylim(0,9000) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+  values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  
+  theme_set(theme_classic())+
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  
+  theme(legend.title=element_blank())
+plot(alpha_soil_prok)
+
+alpha_soil_prok_shan = plot_richness(ps.noncontam_alpha_soil, x= "alpha_label", 
+                                color="Growth_Stage", measures = c( "Shannon")) +
+  
+  ylim(1,8) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="bottom") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  
+  theme(legend.title=element_blank())
+plot(alpha_soil_prok_shan)
+
+# roots
+ps.noncontam_alpha_roots <- ps.noncontam_roots_obj1
+sample_data(ps.noncontam_alpha_roots)$alpha_label <- factor(sample_data(ps.noncontam_alpha_roots)$alpha_label,
+                                                           level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_roots, split = TRUE, measures = NULL)
+alpha_roots_prok = plot_richness(ps.noncontam_alpha_roots, x= "alpha_label", 
+                                color="Growth_Stage", measures = c( "Observed")) +
+  
+  ylim(0,9000)+
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="none") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank())
+plot(alpha_roots_prok)
+
+
+alpha_roots_prok_shan = plot_richness(ps.noncontam_alpha_roots, x= "alpha_label", 
+                                 color="Growth_Stage", measures = c( "Shannon")) +
+  
+  ylim(1,8)+
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="none") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.title=element_blank())
+plot(alpha_roots_prok_shan)
+#stems
+ps.noncontam_alpha_stems <- ps.noncontam_stems_obj1
+sample_data(ps.noncontam_alpha_stems)$alpha_label <- factor(sample_data(ps.noncontam_alpha_stems)$alpha_label,
+                                                           level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_stems, split = TRUE, measures = NULL)
+alpha_stems_prok = plot_richness(ps.noncontam_alpha_stems, x= "alpha_label", 
+                                color="Growth_Stage", measures = c("Observed")) +
+  
+  ylim(0, 1400) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="bottom") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank())
+plot(alpha_stems_prok)
+
+alpha_stems_prok_shan = plot_richness(ps.noncontam_alpha_stems, x= "alpha_label", 
+                                 color="Growth_Stage", measures = c("Shannon")) +
+  
+  ylim(0,6) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="bottom") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank())
+plot(alpha_stems_prok_shan)
+
+# leaves
+ps.noncontam_alpha_leaves <- ps.noncontam_leaves_obj1
+sample_data(ps.noncontam_alpha_leaves)$alpha_label <- factor(sample_data(ps.noncontam_alpha_leaves)$alpha_label,
+                                                           level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_leaves, split = TRUE, measures = NULL)
+alpha_leaves_prok = plot_richness(ps.noncontam_alpha_leaves, x= "alpha_label", 
+                                color="Growth_Stage", measures = c( "Observed")) +
+  ylim(0,1400)+
+  
+  expand_limits(x = 0, y = 0) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Observed OTUs") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.title = element_text(size = 10, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="bottom") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank())
+plot(alpha_leaves_prok)
+
+sample_data(ps.noncontam_alpha_leaves)$alpha_label <- factor(sample_data(ps.noncontam_alpha_leaves)$alpha_label,
+                                                             level=c("Conventional V2","Conventional R2","Conventional R6","No_Till V2","No_Till R2", "No_Till R6","Organic V2", "Organic R2", "Organic R6"))
+estimate_richness(ps.noncontam_alpha_leaves, split = TRUE, measures = NULL)
+alpha_leaves_prok_shan = plot_richness(ps.noncontam_alpha_leaves, x= "alpha_label", 
+                                  color="Growth_Stage", measures = c( "Shannon")) +
+  ylim(0,6)+
+  
+  expand_limits(x = 0, y = 0) +
+  geom_boxplot(outlier.colour="black", outlier.fill = "black") +
+  geom_point(size = 2, shape = 16) +
+  labs(title="", x="", y = "Shannon Diversity") +
+  scale_x_discrete("Sample", labels = c("Conventional V2" = "Conventional V2","No_Till V2" = "No-Till V2","Organic V2" = "Organic V2","Conventional R2" = "Conventional R2", "No_Till R2" = "No-Till R2","Organic R2" = "Organic R2", "Conventional R6" = "Conventional R6","No_Till R6" = "No-Till R6", "Organic R6" = "Organic R6" )) +
+  scale_colour_manual("Growth_Stage",breaks = c("V2","R2","R6"),
+                      values = c("V2"="orange", "R2"="blue", "R6" = "red")) +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0)) + 
+  theme_set(theme_classic())+
+  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  #theme(strip.text.x = element_text(size = 9)) +
+  theme(legend.position="bottom") +
+  theme(legend.position="bottom") +
+  theme(axis.text.x = element_text(angle = 90,vjust =1.5,size = 11, face = "bold")) +
+  theme(axis.text.y = element_text(size = 11, face = "bold")) +
+  theme(axis.title = element_text(size = 12, face = "bold")) + 
+  theme(legend.key = element_blank(), legend.title = element_text(size = 12)) +
+  theme(strip.text.x = element_text(size = 12, face = "bold")) +
+  theme(legend.position="none") +
+  theme(legend.title=element_blank())
+plot(alpha_leaves_prok_shan)
+
+# combine plots
+library(ggpubr)
+ggarrange(alpha_soil_prok,alpha_soil_prok_shan,alpha_roots_prok,alpha_roots_prok_shan,alpha_stems_prok,alpha_stems_prok_shan,alpha_leaves_prok,alpha_leaves_prok_shan,
+          #labels = c("A", "B", "C", "D" ),
+          widths = c(2.0, 2.0, 2.0, 2.0,2.0,2.0,2.0,2.0),
+          align = "h", ncol = 4, nrow = 2)
 
 ###alpha diversity_table---------------------------------------------------
 # make data frames of metadata and otu tables for analyzing alpha diversity 
@@ -462,11 +749,26 @@ library(dplyr)
 alpha_div_soil_prok_df_v2 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "V2",]
 alpha_div_soil_prok_df_v2
 
+#soil
+# get significant differences
+install.packages("agricolae")
+library("agricolae")
+library(dplyr)
+
+alpha_div_soil_prok_df_v2 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "V2",]
+alpha_div_soil_prok_df_v2
+
 #soil v2 rich
 aov_prok_soil_v2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_soil_prok_df_v2)
 summary(aov_prok_soil_v2_rich)
 HSD.test(aov_prok_soil_v2_rich, "Indicator_label") -> tukeyHSD_prok_soil_v2_rich
 tukeyHSD_prok_soil_v2_rich
+
+#isa_below_fungi_Management_fdr$sign$p.value<-p.adjust(isa_below_fungi_Management_fdr$sign$p.value, "fdr")
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_v2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_v2$Observed, alpha_div_soil_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil R2 rich
 alpha_div_soil_prok_df_R2 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R2",]
 alpha_div_soil_prok_df_R2
@@ -474,6 +776,10 @@ aov_prok_soil_R2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_soil_pro
 summary(aov_prok_soil_R2_rich)
 HSD.test(aov_prok_soil_R2_rich, "Indicator_label") -> tukeyHSD_prok_soil_R2_rich
 tukeyHSD_prok_soil_R2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_R2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R2$Observed, alpha_div_soil_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # soil R6 rich
 alpha_div_soil_prok_df_R6 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R6",]
 alpha_div_soil_prok_df_R6
@@ -482,12 +788,19 @@ summary(aov_prok_soil_R6_rich)
 HSD.test(aov_prok_soil_R6_rich, "Indicator_label") -> tukeyHSD_prok_soil_R6_rich
 tukeyHSD_prok_soil_R6_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_R6)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R6$Observed, alpha_div_soil_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 
 #soil v2 shan
 aov_prok_soil_v2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_soil_prok_df_v2)
 summary(aov_prok_soil_v2_shan)
 HSD.test(aov_prok_soil_v2_shan, "Indicator_label") -> tukeyHSD_prok_soil_v2_shan
 tukeyHSD_prok_soil_v2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_v2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_v2$Shannon, alpha_div_soil_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil R2 shan
 alpha_div_soil_prok_df_R2 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R2",]
 alpha_div_soil_prok_df_R2
@@ -495,6 +808,10 @@ aov_prok_soil_R2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_soil_prok
 summary(aov_prok_soil_R2_shan)
 HSD.test(aov_prok_soil_R2_shan, "Indicator_label") -> tukeyHSD_prok_soil_R2_shan
 tukeyHSD_prok_soil_R2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_R2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R2$Shannon, alpha_div_soil_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # soil R6 shan
 alpha_div_soil_prok_df_R6 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R6",]
 alpha_div_soil_prok_df_R6
@@ -503,11 +820,19 @@ summary(aov_prok_soil_R6_shan)
 HSD.test(aov_prok_soil_R6_shan, "Indicator_label") -> tukeyHSD_prok_soil_R6_shan
 tukeyHSD_prok_soil_R6_shan
 
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_R6)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R6$Shannon, alpha_div_soil_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil v2 even
 aov_prok_soil_v2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_prok_df_v2)
 summary(aov_prok_soil_v2_even)
 HSD.test(aov_prok_soil_v2_even, "Indicator_label") -> tukeyHSD_prok_soil_v2_even
 tukeyHSD_prok_soil_v2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_v2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_v2$Jevenness, alpha_div_soil_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil R2 even
 alpha_div_soil_prok_df_R2 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R2",]
 alpha_div_soil_prok_df_R2
@@ -515,6 +840,11 @@ aov_prok_soil_R2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_pr
 summary(aov_prok_soil_R2_even)
 HSD.test(aov_prok_soil_R2_even, "Indicator_label") -> tukeyHSD_prok_soil_R2_even
 tukeyHSD_prok_soil_R2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_R2)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R2$Jevenness, alpha_div_soil_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
+
 # soil R6 even
 alpha_div_soil_prok_df_R6 <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Growth_Stage == "R6",]
 alpha_div_soil_prok_df_R6
@@ -522,6 +852,10 @@ aov_prok_soil_R6_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_pr
 summary(aov_prok_soil_R6_even)
 HSD.test(aov_prok_soil_R6_even, "Indicator_label") -> tukeyHSD_prok_soil_R6_even
 tukeyHSD_prok_soil_R6_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_R6)
+pairwise.wilcox.test(alpha_div_soil_prok_df_R6$Jevenness, alpha_div_soil_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 #must also split into management systems 
 alpha_div_soil_prok_df_Conventional <- alpha_div_soil_prok_df[alpha_div_soil_prok_df$Management == "Conventional",]
 alpha_div_soil_prok_df_Conventional
@@ -535,11 +869,20 @@ aov_prok_soil_Conventional_rich <- aov(Observed ~ Indicator_label, data=alpha_di
 summary(aov_prok_soil_Conventional_rich)
 HSD.test(aov_prok_soil_Conventional_rich, "Indicator_label") -> tukeyHSD_prok_soil_Conventional_rich
 tukeyHSD_prok_soil_Conventional_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Conventional$Observed, alpha_div_soil_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil No_Till rich
 aov_prok_soil_No_Till_rich <- aov(Observed ~ Indicator_label, data=alpha_div_soil_prok_df_No_Till)
 summary(aov_prok_soil_No_Till_rich)
 HSD.test(aov_prok_soil_No_Till_rich, "Indicator_label") -> tukeyHSD_prok_soil_No_Till_rich
 tukeyHSD_prok_soil_No_Till_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_soil_prok_df_No_Till$Observed, alpha_div_soil_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
+
 # soil Organic rich
 alpha_div_soil_prok_df_Organic
 aov_prok_soil_Organic_rich <- aov(Observed ~ Indicator_label, data=alpha_div_soil_prok_df_Organic)
@@ -548,16 +891,29 @@ HSD.test(aov_prok_soil_Organic_rich, "Indicator_label") -> tukeyHSD_prok_soil_Or
 tukeyHSD_prok_soil_Organic_rich
 
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_soil_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Organic$Observed, alpha_div_soil_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #soil Conventional shan
 aov_prok_soil_Conventional_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_soil_prok_df_Conventional)
 summary(aov_prok_soil_Conventional_shan)
 HSD.test(aov_prok_soil_Conventional_shan, "Indicator_label") -> tukeyHSD_prok_soil_Conventional_shan
 tukeyHSD_prok_soil_Conventional_shan
+
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Conventional$Shannon, alpha_div_soil_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil No_Till shan
 aov_prok_soil_No_Till_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_soil_prok_df_No_Till)
 summary(aov_prok_soil_No_Till_shan)
 HSD.test(aov_prok_soil_No_Till_shan, "Indicator_label") -> tukeyHSD_prok_soil_No_Till_shan
 tukeyHSD_prok_soil_No_Till_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_soil_prok_df_No_Till$Shannon, alpha_div_soil_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # soil Organic shan
 alpha_div_soil_prok_df_Organic
 aov_prok_soil_Organic_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_soil_prok_df_Organic)
@@ -565,16 +921,28 @@ summary(aov_prok_soil_Organic_shan)
 HSD.test(aov_prok_soil_Organic_shan, "Indicator_label") -> tukeyHSD_prok_soil_Organic_shan
 tukeyHSD_prok_soil_Organic_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_soil_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Organic$Shannon, alpha_div_soil_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #soil Conventional even
 aov_prok_soil_Conventional_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_prok_df_Conventional)
 summary(aov_prok_soil_Conventional_even)
 HSD.test(aov_prok_soil_Conventional_even, "Indicator_label") -> tukeyHSD_prok_soil_Conventional_even
 tukeyHSD_prok_soil_Conventional_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Conventional$Jevenness, alpha_div_soil_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #soil No_Till even
 aov_prok_soil_No_Till_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_prok_df_No_Till)
 summary(aov_prok_soil_No_Till_even)
 HSD.test(aov_prok_soil_No_Till_even, "Indicator_label") -> tukeyHSD_prok_soil_No_Till_even
 tukeyHSD_prok_soil_No_Till_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_soil_prok_df_No_Till$Jevenness, alpha_div_soil_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # soil Organic even
 alpha_div_soil_prok_df_Organic
 aov_prok_soil_Organic_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_soil_prok_df_Organic)
@@ -582,6 +950,9 @@ summary(aov_prok_soil_Organic_even)
 HSD.test(aov_prok_soil_Organic_even, "Indicator_label") -> tukeyHSD_prok_soil_Organic_even
 tukeyHSD_prok_soil_Organic_even
 
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_soil_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_soil_prok_df_Organic$Jevenness, alpha_div_soil_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
 
 
 
@@ -596,6 +967,10 @@ aov_prok_roots_v2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_roots_p
 summary(aov_prok_roots_v2_rich)
 HSD.test(aov_prok_roots_v2_rich, "Indicator_label") -> tukeyHSD_prok_roots_v2_rich
 tukeyHSD_prok_roots_v2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_v2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_v2$Observed, alpha_div_roots_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots R2 rich
 alpha_div_roots_prok_df_R2 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R2",]
 alpha_div_roots_prok_df_R2
@@ -603,6 +978,10 @@ aov_prok_roots_R2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_roots_p
 summary(aov_prok_roots_R2_rich)
 HSD.test(aov_prok_roots_R2_rich, "Indicator_label") -> tukeyHSD_prok_roots_R2_rich
 tukeyHSD_prok_roots_R2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_R2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R2$Observed, alpha_div_roots_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # roots R6 rich
 alpha_div_roots_prok_df_R6 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R6",]
 alpha_div_roots_prok_df_R6
@@ -611,12 +990,19 @@ summary(aov_prok_roots_R6_rich)
 HSD.test(aov_prok_roots_R6_rich, "Indicator_label") -> tukeyHSD_prok_roots_R6_rich
 tukeyHSD_prok_roots_R6_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_R6)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R6$Observed, alpha_div_roots_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 
 #roots v2 shan
 aov_prok_roots_v2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_roots_prok_df_v2)
 summary(aov_prok_roots_v2_shan)
 HSD.test(aov_prok_roots_v2_shan, "Indicator_label") -> tukeyHSD_prok_roots_v2_shan
 tukeyHSD_prok_roots_v2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_v2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_v2$Shannon, alpha_div_roots_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots R2 shan
 alpha_div_roots_prok_df_R2 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R2",]
 alpha_div_roots_prok_df_R2
@@ -624,6 +1010,10 @@ aov_prok_roots_R2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_roots_pr
 summary(aov_prok_roots_R2_shan)
 HSD.test(aov_prok_roots_R2_shan, "Indicator_label") -> tukeyHSD_prok_roots_R2_shan
 tukeyHSD_prok_roots_R2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_R2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R2$Shannon, alpha_div_roots_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # roots R6 shan
 alpha_div_roots_prok_df_R6 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R6",]
 alpha_div_roots_prok_df_R6
@@ -632,11 +1022,19 @@ summary(aov_prok_roots_R6_shan)
 HSD.test(aov_prok_roots_R6_shan, "Indicator_label") -> tukeyHSD_prok_roots_R6_shan
 tukeyHSD_prok_roots_R6_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_R6)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R6$Shannon, alpha_div_roots_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #roots v2 even
 aov_prok_roots_v2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_prok_df_v2)
 summary(aov_prok_roots_v2_even)
 HSD.test(aov_prok_roots_v2_even, "Indicator_label") -> tukeyHSD_prok_roots_v2_even
 tukeyHSD_prok_roots_v2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_v2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_v2$Jevenness, alpha_div_roots_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots R2 even
 alpha_div_roots_prok_df_R2 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R2",]
 alpha_div_roots_prok_df_R2
@@ -644,6 +1042,10 @@ aov_prok_roots_R2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_
 summary(aov_prok_roots_R2_even)
 HSD.test(aov_prok_roots_R2_even, "Indicator_label") -> tukeyHSD_prok_roots_R2_even
 tukeyHSD_prok_roots_R2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_R2)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R2$Jevenness, alpha_div_roots_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # roots R6 even
 alpha_div_roots_prok_df_R6 <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Growth_Stage == "R6",]
 alpha_div_roots_prok_df_R6
@@ -651,6 +1053,10 @@ aov_prok_roots_R6_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_
 summary(aov_prok_roots_R6_even)
 HSD.test(aov_prok_roots_R6_even, "Indicator_label") -> tukeyHSD_prok_roots_R6_even
 tukeyHSD_prok_roots_R6_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_R6)
+pairwise.wilcox.test(alpha_div_roots_prok_df_R6$Jevenness, alpha_div_roots_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 #must also split into management systems 
 alpha_div_roots_prok_df_Conventional <- alpha_div_roots_prok_df[alpha_div_roots_prok_df$Management == "Conventional",]
 alpha_div_roots_prok_df_Conventional
@@ -664,11 +1070,19 @@ aov_prok_roots_Conventional_rich <- aov(Observed ~ Indicator_label, data=alpha_d
 summary(aov_prok_roots_Conventional_rich)
 HSD.test(aov_prok_roots_Conventional_rich, "Indicator_label") -> tukeyHSD_prok_roots_Conventional_rich
 tukeyHSD_prok_roots_Conventional_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Conventional$Observed, alpha_div_roots_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots No_Till rich
 aov_prok_roots_No_Till_rich <- aov(Observed ~ Indicator_label, data=alpha_div_roots_prok_df_No_Till)
 summary(aov_prok_roots_No_Till_rich)
 HSD.test(aov_prok_roots_No_Till_rich, "Indicator_label") -> tukeyHSD_prok_roots_No_Till_rich
 tukeyHSD_prok_roots_No_Till_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_roots_prok_df_No_Till$Observed, alpha_div_roots_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # roots Organic rich
 alpha_div_roots_prok_df_Organic
 aov_prok_roots_Organic_rich <- aov(Observed ~ Indicator_label, data=alpha_div_roots_prok_df_Organic)
@@ -676,17 +1090,30 @@ summary(aov_prok_roots_Organic_rich)
 HSD.test(aov_prok_roots_Organic_rich, "Indicator_label") -> tukeyHSD_prok_roots_Organic_rich
 tukeyHSD_prok_roots_Organic_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_roots_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Organic$Observed, alpha_div_roots_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 
 #roots Conventional shan
 aov_prok_roots_Conventional_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_roots_prok_df_Conventional)
 summary(aov_prok_roots_Conventional_shan)
 HSD.test(aov_prok_roots_Conventional_shan, "Indicator_label") -> tukeyHSD_prok_roots_Conventional_shan
 tukeyHSD_prok_roots_Conventional_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Conventional$Shannon, alpha_div_roots_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots No_Till shan
 aov_prok_roots_No_Till_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_roots_prok_df_No_Till)
 summary(aov_prok_roots_No_Till_shan)
 HSD.test(aov_prok_roots_No_Till_shan, "Indicator_label") -> tukeyHSD_prok_roots_No_Till_shan
 tukeyHSD_prok_roots_No_Till_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_roots_prok_df_No_Till$Shannon, alpha_div_roots_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
+
 # roots Organic shan
 alpha_div_roots_prok_df_Organic
 aov_prok_roots_Organic_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_roots_prok_df_Organic)
@@ -694,22 +1121,38 @@ summary(aov_prok_roots_Organic_shan)
 HSD.test(aov_prok_roots_Organic_shan, "Indicator_label") -> tukeyHSD_prok_roots_Organic_shan
 tukeyHSD_prok_roots_Organic_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_roots_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Organic$Shannon, alpha_div_roots_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #roots Conventional even
 aov_prok_roots_Conventional_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_prok_df_Conventional)
 summary(aov_prok_roots_Conventional_even)
 HSD.test(aov_prok_roots_Conventional_even, "Indicator_label") -> tukeyHSD_prok_roots_Conventional_even
 tukeyHSD_prok_roots_Conventional_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Conventional$Jevenness, alpha_div_roots_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #roots No_Till even
 aov_prok_roots_No_Till_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_prok_df_No_Till)
 summary(aov_prok_roots_No_Till_even)
 HSD.test(aov_prok_roots_No_Till_even, "Indicator_label") -> tukeyHSD_prok_roots_No_Till_even
 tukeyHSD_prok_roots_No_Till_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_roots_prok_df_No_Till$Jevenness, alpha_div_roots_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # roots Organic even
 alpha_div_roots_prok_df_Organic
 aov_prok_roots_Organic_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_roots_prok_df_Organic)
 summary(aov_prok_roots_Organic_even)
 HSD.test(aov_prok_roots_Organic_even, "Indicator_label") -> tukeyHSD_prok_roots_Organic_even
 tukeyHSD_prok_roots_Organic_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_roots_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_roots_prok_df_Organic$Jevenness, alpha_div_roots_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
 
 
 
@@ -726,6 +1169,10 @@ aov_prok_stems_v2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_stems_p
 summary(aov_prok_stems_v2_rich)
 HSD.test(aov_prok_stems_v2_rich, "Indicator_label") -> tukeyHSD_prok_stems_v2_rich
 tukeyHSD_prok_stems_v2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_v2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_v2$Observed, alpha_div_stems_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems R2 rich
 alpha_div_stems_prok_df_R2 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R2",]
 alpha_div_stems_prok_df_R2
@@ -733,6 +1180,10 @@ aov_prok_stems_R2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_stems_p
 summary(aov_prok_stems_R2_rich)
 HSD.test(aov_prok_stems_R2_rich, "Indicator_label") -> tukeyHSD_prok_stems_R2_rich
 tukeyHSD_prok_stems_R2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_R2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R2$Observed, alpha_div_stems_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems R6 rich
 alpha_div_stems_prok_df_R6 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R6",]
 alpha_div_stems_prok_df_R6
@@ -741,12 +1192,20 @@ summary(aov_prok_stems_R6_rich)
 HSD.test(aov_prok_stems_R6_rich, "Indicator_label") -> tukeyHSD_prok_stems_R6_rich
 tukeyHSD_prok_stems_R6_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_R6)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R6$Observed, alpha_div_stems_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
+
 
 #stems v2 shan
 aov_prok_stems_v2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_stems_prok_df_v2)
 summary(aov_prok_stems_v2_shan)
 HSD.test(aov_prok_stems_v2_shan, "Indicator_label") -> tukeyHSD_prok_stems_v2_shan
 tukeyHSD_prok_stems_v2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_v2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_v2$Shannon, alpha_div_stems_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems R2 shan
 alpha_div_stems_prok_df_R2 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R2",]
 alpha_div_stems_prok_df_R2
@@ -754,6 +1213,10 @@ aov_prok_stems_R2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_stems_pr
 summary(aov_prok_stems_R2_shan)
 HSD.test(aov_prok_stems_R2_shan, "Indicator_label") -> tukeyHSD_prok_stems_R2_shan
 tukeyHSD_prok_stems_R2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_R2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R2$Shannon, alpha_div_stems_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems R6 shan
 alpha_div_stems_prok_df_R6 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R6",]
 alpha_div_stems_prok_df_R6
@@ -762,11 +1225,19 @@ summary(aov_prok_stems_R6_shan)
 HSD.test(aov_prok_stems_R6_shan, "Indicator_label") -> tukeyHSD_prok_stems_R6_shan
 tukeyHSD_prok_stems_R6_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_R6)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R6$Shannon, alpha_div_stems_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #stems v2 even
 aov_prok_stems_v2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_prok_df_v2)
 summary(aov_prok_stems_v2_even)
 HSD.test(aov_prok_stems_v2_even, "Indicator_label") -> tukeyHSD_prok_stems_v2_even
 tukeyHSD_prok_stems_v2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_v2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_v2$Jevenness, alpha_div_stems_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems R2 even
 alpha_div_stems_prok_df_R2 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R2",]
 alpha_div_stems_prok_df_R2
@@ -774,6 +1245,10 @@ aov_prok_stems_R2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_
 summary(aov_prok_stems_R2_even)
 HSD.test(aov_prok_stems_R2_even, "Indicator_label") -> tukeyHSD_prok_stems_R2_even
 tukeyHSD_prok_stems_R2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_R2)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R2$Jevenness, alpha_div_stems_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems R6 even
 alpha_div_stems_prok_df_R6 <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Growth_Stage == "R6",]
 alpha_div_stems_prok_df_R6
@@ -781,6 +1256,10 @@ aov_prok_stems_R6_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_
 summary(aov_prok_stems_R6_even)
 HSD.test(aov_prok_stems_R6_even, "Indicator_label") -> tukeyHSD_prok_stems_R6_even
 tukeyHSD_prok_stems_R6_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_R6)
+pairwise.wilcox.test(alpha_div_stems_prok_df_R6$Jevenness, alpha_div_stems_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 #must also split into management systems 
 alpha_div_stems_prok_df_Conventional <- alpha_div_stems_prok_df[alpha_div_stems_prok_df$Management == "Conventional",]
 alpha_div_stems_prok_df_Conventional
@@ -794,11 +1273,19 @@ aov_prok_stems_Conventional_rich <- aov(Observed ~ Indicator_label, data=alpha_d
 summary(aov_prok_stems_Conventional_rich)
 HSD.test(aov_prok_stems_Conventional_rich, "Indicator_label") -> tukeyHSD_prok_stems_Conventional_rich
 tukeyHSD_prok_stems_Conventional_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Conventional$Observed, alpha_div_stems_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems No_Till rich
 aov_prok_stems_No_Till_rich <- aov(Observed ~ Indicator_label, data=alpha_div_stems_prok_df_No_Till)
 summary(aov_prok_stems_No_Till_rich)
 HSD.test(aov_prok_stems_No_Till_rich, "Indicator_label") -> tukeyHSD_prok_stems_No_Till_rich
 tukeyHSD_prok_stems_No_Till_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_stems_prok_df_No_Till$Observed, alpha_div_stems_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems Organic rich
 alpha_div_stems_prok_df_Organic
 aov_prok_stems_Organic_rich <- aov(Observed ~ Indicator_label, data=alpha_div_stems_prok_df_Organic)
@@ -806,17 +1293,29 @@ summary(aov_prok_stems_Organic_rich)
 HSD.test(aov_prok_stems_Organic_rich, "Indicator_label") -> tukeyHSD_prok_stems_Organic_rich
 tukeyHSD_prok_stems_Organic_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_stems_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Organic$Observed, alpha_div_stems_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 
 #stems Conventional shan
 aov_prok_stems_Conventional_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_stems_prok_df_Conventional)
 summary(aov_prok_stems_Conventional_shan)
 HSD.test(aov_prok_stems_Conventional_shan, "Indicator_label") -> tukeyHSD_prok_stems_Conventional_shan
 tukeyHSD_prok_stems_Conventional_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Conventional$Shannon, alpha_div_stems_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems No_Till shan
 aov_prok_stems_No_Till_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_stems_prok_df_No_Till)
 summary(aov_prok_stems_No_Till_shan)
 HSD.test(aov_prok_stems_No_Till_shan, "Indicator_label") -> tukeyHSD_prok_stems_No_Till_shan
 tukeyHSD_prok_stems_No_Till_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_stems_prok_df_No_Till$Shannon, alpha_div_stems_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems Organic shan
 alpha_div_stems_prok_df_Organic
 aov_prok_stems_Organic_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_stems_prok_df_Organic)
@@ -824,22 +1323,38 @@ summary(aov_prok_stems_Organic_shan)
 HSD.test(aov_prok_stems_Organic_shan, "Indicator_label") -> tukeyHSD_prok_stems_Organic_shan
 tukeyHSD_prok_stems_Organic_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_stems_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Organic$Shannon, alpha_div_stems_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #stems Conventional even
 aov_prok_stems_Conventional_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_prok_df_Conventional)
 summary(aov_prok_stems_Conventional_even)
 HSD.test(aov_prok_stems_Conventional_even, "Indicator_label") -> tukeyHSD_prok_stems_Conventional_even
 tukeyHSD_prok_stems_Conventional_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Conventional$Jevenness, alpha_div_stems_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #stems No_Till even
 aov_prok_stems_No_Till_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_prok_df_No_Till)
 summary(aov_prok_stems_No_Till_even)
 HSD.test(aov_prok_stems_No_Till_even, "Indicator_label") -> tukeyHSD_prok_stems_No_Till_even
 tukeyHSD_prok_stems_No_Till_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_stems_prok_df_No_Till$Jevenness, alpha_div_stems_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # stems Organic even
 alpha_div_stems_prok_df_Organic
 aov_prok_stems_Organic_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_stems_prok_df_Organic)
 summary(aov_prok_stems_Organic_even)
 HSD.test(aov_prok_stems_Organic_even, "Indicator_label") -> tukeyHSD_prok_stems_Organic_even
 tukeyHSD_prok_stems_Organic_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_stems_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_stems_prok_df_Organic$Jevenness, alpha_div_stems_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
 
 
 
@@ -852,12 +1367,15 @@ tukeyHSD_prok_stems_Organic_even
 
 alpha_div_leaves_prok_df_v2 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "V2",]
 alpha_div_leaves_prok_df_v2
-
 #leaves v2 rich
 aov_prok_leaves_v2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_leaves_prok_df_v2)
 summary(aov_prok_leaves_v2_rich)
 HSD.test(aov_prok_leaves_v2_rich, "Indicator_label") -> tukeyHSD_prok_leaves_v2_rich
 tukeyHSD_prok_leaves_v2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_v2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_v2$Observed, alpha_div_leaves_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves R2 rich
 alpha_div_leaves_prok_df_R2 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R2",]
 alpha_div_leaves_prok_df_R2
@@ -865,6 +1383,10 @@ aov_prok_leaves_R2_rich <- aov(Observed ~ Indicator_label, data=alpha_div_leaves
 summary(aov_prok_leaves_R2_rich)
 HSD.test(aov_prok_leaves_R2_rich, "Indicator_label") -> tukeyHSD_prok_leaves_R2_rich
 tukeyHSD_prok_leaves_R2_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_R2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R2$Observed, alpha_div_leaves_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # leaves R6 rich
 alpha_div_leaves_prok_df_R6 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R6",]
 alpha_div_leaves_prok_df_R6
@@ -873,12 +1395,20 @@ summary(aov_prok_leaves_R6_rich)
 HSD.test(aov_prok_leaves_R6_rich, "Indicator_label") -> tukeyHSD_prok_leaves_R6_rich
 tukeyHSD_prok_leaves_R6_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_R6)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R6$Observed, alpha_div_leaves_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
+
 
 #leaves v2 shan
 aov_prok_leaves_v2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_leaves_prok_df_v2)
 summary(aov_prok_leaves_v2_shan)
 HSD.test(aov_prok_leaves_v2_shan, "Indicator_label") -> tukeyHSD_prok_leaves_v2_shan
 tukeyHSD_prok_leaves_v2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_v2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_v2$Shannon, alpha_div_leaves_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves R2 shan
 alpha_div_leaves_prok_df_R2 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R2",]
 alpha_div_leaves_prok_df_R2
@@ -886,6 +1416,10 @@ aov_prok_leaves_R2_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_leaves_
 summary(aov_prok_leaves_R2_shan)
 HSD.test(aov_prok_leaves_R2_shan, "Indicator_label") -> tukeyHSD_prok_leaves_R2_shan
 tukeyHSD_prok_leaves_R2_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_R2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R2$Shannon, alpha_div_leaves_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
 # leaves R6 shan
 alpha_div_leaves_prok_df_R6 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R6",]
 alpha_div_leaves_prok_df_R6
@@ -894,11 +1428,19 @@ summary(aov_prok_leaves_R6_shan)
 HSD.test(aov_prok_leaves_R6_shan, "Indicator_label") -> tukeyHSD_prok_leaves_R6_shan
 tukeyHSD_prok_leaves_R6_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_R6)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R6$Shannon, alpha_div_leaves_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #leaves v2 even
 aov_prok_leaves_v2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leaves_prok_df_v2)
 summary(aov_prok_leaves_v2_even)
 HSD.test(aov_prok_leaves_v2_even, "Indicator_label") -> tukeyHSD_prok_leaves_v2_even
 tukeyHSD_prok_leaves_v2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_v2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_v2$Jevenness, alpha_div_leaves_prok_df_v2$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves R2 even
 alpha_div_leaves_prok_df_R2 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R2",]
 alpha_div_leaves_prok_df_R2
@@ -906,6 +1448,11 @@ aov_prok_leaves_R2_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leave
 summary(aov_prok_leaves_R2_even)
 HSD.test(aov_prok_leaves_R2_even, "Indicator_label") -> tukeyHSD_prok_leaves_R2_even
 tukeyHSD_prok_leaves_R2_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_R2)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R2$Jevenness, alpha_div_leaves_prok_df_R2$Indicator_label,
+                     p.adjust.method = "fdr")
+
 # leaves R6 even
 alpha_div_leaves_prok_df_R6 <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Growth_Stage == "R6",]
 alpha_div_leaves_prok_df_R6
@@ -913,6 +1460,10 @@ aov_prok_leaves_R6_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leave
 summary(aov_prok_leaves_R6_even)
 HSD.test(aov_prok_leaves_R6_even, "Indicator_label") -> tukeyHSD_prok_leaves_R6_even
 tukeyHSD_prok_leaves_R6_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_R6)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_R6$Jevenness, alpha_div_leaves_prok_df_R6$Indicator_label,
+                     p.adjust.method = "fdr")
 #must also split into management syleaves 
 alpha_div_leaves_prok_df_Conventional <- alpha_div_leaves_prok_df[alpha_div_leaves_prok_df$Management == "Conventional",]
 alpha_div_leaves_prok_df_Conventional
@@ -926,11 +1477,19 @@ aov_prok_leaves_Conventional_rich <- aov(Observed ~ Indicator_label, data=alpha_
 summary(aov_prok_leaves_Conventional_rich)
 HSD.test(aov_prok_leaves_Conventional_rich, "Indicator_label") -> tukeyHSD_prok_leaves_Conventional_rich
 tukeyHSD_prok_leaves_Conventional_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Conventional$Observed, alpha_div_leaves_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves No_Till rich
 aov_prok_leaves_No_Till_rich <- aov(Observed ~ Indicator_label, data=alpha_div_leaves_prok_df_No_Till)
 summary(aov_prok_leaves_No_Till_rich)
 HSD.test(aov_prok_leaves_No_Till_rich, "Indicator_label") -> tukeyHSD_prok_leaves_No_Till_rich
 tukeyHSD_prok_leaves_No_Till_rich
+
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_No_Till$Observed, alpha_div_leaves_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # leaves Organic rich
 alpha_div_leaves_prok_df_Organic
 aov_prok_leaves_Organic_rich <- aov(Observed ~ Indicator_label, data=alpha_div_leaves_prok_df_Organic)
@@ -938,17 +1497,29 @@ summary(aov_prok_leaves_Organic_rich)
 HSD.test(aov_prok_leaves_Organic_rich, "Indicator_label") -> tukeyHSD_prok_leaves_Organic_rich
 tukeyHSD_prok_leaves_Organic_rich
 
+kruskal.test(Observed ~ Indicator_label, data = alpha_div_leaves_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Organic$Observed, alpha_div_leaves_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 
 #leaves Conventional shan
 aov_prok_leaves_Conventional_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_leaves_prok_df_Conventional)
 summary(aov_prok_leaves_Conventional_shan)
 HSD.test(aov_prok_leaves_Conventional_shan, "Indicator_label") -> tukeyHSD_prok_leaves_Conventional_shan
 tukeyHSD_prok_leaves_Conventional_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Conventional$Shannon, alpha_div_leaves_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves No_Till shan
 aov_prok_leaves_No_Till_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_leaves_prok_df_No_Till)
 summary(aov_prok_leaves_No_Till_shan)
 HSD.test(aov_prok_leaves_No_Till_shan, "Indicator_label") -> tukeyHSD_prok_leaves_No_Till_shan
 tukeyHSD_prok_leaves_No_Till_shan
+
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_No_Till$Shannon, alpha_div_leaves_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
 # leaves Organic shan
 alpha_div_leaves_prok_df_Organic
 aov_prok_leaves_Organic_shan <- aov(Shannon ~ Indicator_label, data=alpha_div_leaves_prok_df_Organic)
@@ -956,16 +1527,30 @@ summary(aov_prok_leaves_Organic_shan)
 HSD.test(aov_prok_leaves_Organic_shan, "Indicator_label") -> tukeyHSD_prok_leaves_Organic_shan
 tukeyHSD_prok_leaves_Organic_shan
 
+kruskal.test(Shannon ~ Indicator_label, data = alpha_div_leaves_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Organic$Shannon, alpha_div_leaves_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
 #leaves Conventional even
 aov_prok_leaves_Conventional_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leaves_prok_df_Conventional)
 summary(aov_prok_leaves_Conventional_even)
 HSD.test(aov_prok_leaves_Conventional_even, "Indicator_label") -> tukeyHSD_prok_leaves_Conventional_even
 tukeyHSD_prok_leaves_Conventional_even
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_Conventional)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Conventional$Jevenness, alpha_div_leaves_prok_df_Conventional$Indicator_label,
+                     p.adjust.method = "fdr")
 #leaves No_Till even
 aov_prok_leaves_No_Till_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leaves_prok_df_No_Till)
 summary(aov_prok_leaves_No_Till_even)
 HSD.test(aov_prok_leaves_No_Till_even, "Indicator_label") -> tukeyHSD_prok_leaves_No_Till_even
 tukeyHSD_prok_leaves_No_Till_even
+
+
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_No_Till)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_No_Till$Jevenness, alpha_div_leaves_prok_df_No_Till$Indicator_label,
+                     p.adjust.method = "fdr")
+
 # leaves Organic even
 alpha_div_leaves_prok_df_Organic
 aov_prok_leaves_Organic_even <- aov(Jevenness ~ Indicator_label, data=alpha_div_leaves_prok_df_Organic)
@@ -974,10 +1559,11 @@ HSD.test(aov_prok_leaves_Organic_even, "Indicator_label") -> tukeyHSD_prok_leave
 tukeyHSD_prok_leaves_Organic_even
 
 
-# Notes on table
-# significance groups before the slash are by single growth stage
-# after the slash is by a single management
-# traditional and conventional are the same thing
+kruskal.test(Jevenness ~ Indicator_label, data = alpha_div_leaves_prok_df_Organic)
+pairwise.wilcox.test(alpha_div_leaves_prok_df_Organic$Jevenness, alpha_div_leaves_prok_df_Organic$Indicator_label,
+                     p.adjust.method = "fdr")
+
+
 
 
 
